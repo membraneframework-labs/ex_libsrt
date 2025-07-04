@@ -14,7 +14,9 @@ Client::~Client() {
   }
 }
 
-void Client::Run(const char* address, int port, const char* stream_id) {
+void Client::Run(const char* address, int port, const char* stream_id, const std::string& password) {
+  this->password = password;
+  
   srt_sock = srt_create_socket();
   if (srt_sock == SRT_ERROR) {
     throw std::runtime_error(std::string(srt_getlasterror_str()));
@@ -43,6 +45,13 @@ void Client::Run(const char* address, int port, const char* stream_id) {
     if (srt_setsockflag(
             srt_sock, SRTO_STREAMID, stream_id, strlen(stream_id)) ==
         SRT_ERROR) {
+      throw std::runtime_error(std::string(srt_getlasterror_str()));
+    }
+  }
+
+  // Set password if provided
+  if (!password.empty()) {
+    if (srt_setsockflag(srt_sock, SRTO_PASSPHRASE, password.c_str(), password.length()) == SRT_ERROR) {
       throw std::runtime_error(std::string(srt_getlasterror_str()));
     }
   }

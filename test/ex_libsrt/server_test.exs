@@ -239,6 +239,40 @@ defmodule ExLibSRT.ServerTest do
     assert_receive :srt_handler_disconnected, 1_000
   end
 
+  # Password validation tests
+  describe "server password validation" do
+    test "rejects too short password" do
+      assert {:error, "SRT password must be at least 10 characters long", 0} =
+               Server.start_link("127.0.0.1", 8080, "short")
+    end
+
+    test "rejects too long password" do
+      long_password = String.duplicate("a", 80)
+
+      assert {:error, "SRT password must be at most 80 characters long", 0} =
+               Server.start_link("127.0.0.1", 8080, long_password)
+    end
+
+    test "accepts valid password length" do
+      valid_password = "validpassword123"
+      {:ok, server} = Server.start_link("127.0.0.1", 8080, valid_password)
+      assert is_pid(server)
+      Server.stop(server)
+    end
+
+    test "accepts empty password (no auth)" do
+      {:ok, server} = Server.start_link("127.0.0.1", 8080, "")
+      assert is_pid(server)
+      Server.stop(server)
+    end
+
+    test "accepts no password parameter (default)" do
+      {:ok, server} = Server.start_link("127.0.0.1", 8080)
+      assert is_pid(server)
+      Server.stop(server)
+    end
+  end
+
   defp prepare_streaming(_ctx) do
     udp_port = Enum.random(10_000..20_000)
     srt_port = Enum.random(10_000..20_000)

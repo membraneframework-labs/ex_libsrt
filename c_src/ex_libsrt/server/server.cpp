@@ -5,7 +5,9 @@
 #include <string>
 #include <unifex/unifex.h>
 
-void Server::Run(const char* address, int port) {
+void Server::Run(const char* address, int port, const std::string& password) {
+  this->password = password;
+  
   srt_sock = srt_create_socket();
   if (srt_sock == SRT_ERROR) {
     throw std::runtime_error(std::string(srt_getlasterror_str()));
@@ -167,6 +169,11 @@ int Server::OnNewConnection(SRTSOCKET ns,
     inet_ntop(AF_INET6, &(ipv6->sin6_addr), ip, INET6_ADDRSTRLEN);
 
     address = ip;
+  }
+
+  // Set password if provided
+  if (!password.empty()) {
+    srt_setsockflag(ns, SRTO_PASSPHRASE, password.c_str(), password.length());
   }
 
   std::unique_lock<std::mutex> lock(accept_mutex);
