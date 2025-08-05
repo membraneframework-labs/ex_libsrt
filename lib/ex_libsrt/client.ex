@@ -47,15 +47,11 @@ defmodule ExLibSRT.Client do
   @spec start_link(address :: String.t(), port :: non_neg_integer(), stream_id :: String.t(), password :: String.t()) ::
           {:ok, t()} | {:error, reason :: String.t(), error_code :: integer()}
   def start_link(address, port, stream_id, password \\ "") do
-    with :ok <- validate_password(password) do
-      case ExLibSRT.Native.start_client(address, port, stream_id, password) do
-        {:ok, client_ref} ->
-          Agent.start_link(fn -> client_ref end)
-
-        {:error, reason, error_code} ->
-          {:error, reason, error_code}
-      end
+    with :ok <- validate_password(password),
+         {:ok, client_ref} <- ExLibSRT.Native.start_client(address, port, stream_id, password) do
+      Agent.start_link(fn -> client_ref end)
     else
+      {:error, reason, error_code} -> {:error, reason, error_code}
       {:error, reason} -> {:error, reason, 0}
     end
   end
@@ -73,15 +69,11 @@ defmodule ExLibSRT.Client do
   @spec start(address :: String.t(), port :: non_neg_integer(), stream_id :: String.t(), password :: String.t()) ::
           {:ok, t()} | {:error, reason :: String.t(), error_code :: integer()}
   def start(address, port, stream_id, password \\ "") do
-    with :ok <- validate_password(password) do
-      case ExLibSRT.Native.start_client(address, port, stream_id, password) do
-        {:ok, client_ref} ->
-          Agent.start(fn -> client_ref end, name: {:global, client_ref})
-
-        {:error, reason, error_code} ->
-          {:error, reason, error_code}
-      end
+    with :ok <- validate_password(password),
+         {:ok, client_ref} <- ExLibSRT.Native.start_client(address, port, stream_id, password) do
+      Agent.start(fn -> client_ref end, name: {:global, client_ref})
     else
+      {:error, reason, error_code} -> {:error, reason, error_code}
       {:error, reason} -> {:error, reason, 0}
     end
   end
