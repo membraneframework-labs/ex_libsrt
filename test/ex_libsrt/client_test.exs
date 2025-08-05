@@ -86,7 +86,7 @@ defmodule ExLibSRT.ClientTest do
     test "rejects too long password" do
       long_password = String.duplicate("a", 80)
 
-      assert {:error, "SRT password must be at most 80 characters long", 0} =
+      assert {:error, "SRT password must be at most 79 characters long", 0} =
                Client.start_link("127.0.0.1", 8080, "stream1", long_password)
     end
 

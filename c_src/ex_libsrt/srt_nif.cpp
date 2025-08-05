@@ -170,7 +170,7 @@ UNIFEX_TERM start_server(UnifexEnv* env, char* address, int port, char* password
               state->env, state->owner, 1, address.c_str(), stream_id.c_str());
         });
 
-    state->server->Run(address, port, std::string(password));
+    state->server->Run(std::string(address), port, std::string(password));
 
     UNIFEX_TERM result = start_server_result_ok(env, state);
     unifex_release_state(env, state);
@@ -270,7 +270,7 @@ start_client(UnifexEnv* env, char* server_address, int port, char* stream_id, ch
       send_srt_client_error(state->env, state->owner, 1, reason.c_str());
     });
 
-    state->client->Run(server_address, port, stream_id, std::string(password));
+    state->client->Run(std::string(server_address), port, std::string(stream_id), std::string(password));
 
     UNIFEX_TERM result = start_client_result_ok(env, state);
     unifex_release_state(env, state);

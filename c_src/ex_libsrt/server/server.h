@@ -26,7 +26,7 @@ public:
   Server() = default;
   ~Server() = default;
 
-  void Run(const char* address, int port, const std::string& password = "");
+  void Run(const std::string& address, int port, const std::string& password = "");
 
   void Stop();
 

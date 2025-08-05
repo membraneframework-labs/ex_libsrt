@@ -5,7 +5,7 @@
 #include <string>
 #include <unifex/unifex.h>
 
-void Server::Run(const char* address, int port, const std::string& password) {
+void Server::Run(const std::string& address, int port, const std::string& password) {
   this->password = password;
   
   srt_sock = srt_create_socket();
@@ -16,7 +16,7 @@ void Server::Run(const char* address, int port, const std::string& password) {
   struct sockaddr_in sa;
   sa.sin_family = AF_INET;
   sa.sin_port = htons(port);
-  if (inet_pton(AF_INET, address, &(sa).sin_addr) != 1) {
+  if (inet_pton(AF_INET, address.c_str(), &(sa).sin_addr) != 1) {
     throw std::runtime_error("Failed to parse server address");
   }
 

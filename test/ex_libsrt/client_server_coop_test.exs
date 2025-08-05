@@ -21,7 +21,7 @@ defmodule ExLibSRT.ClientServerCoopTest do
 
       assert_receive {:srt_server_conn_closed, ^conn_id}, 500
 
-      # send(parent, :stopped)
+      send(parent, :stopped)
     end)
 
     assert_receive :running, 500
@@ -30,9 +30,9 @@ defmodule ExLibSRT.ClientServerCoopTest do
 
     assert_receive :srt_client_connected, 500
 
-    # :ok = Client.stop(client)
+    :ok = Client.stop(client)
 
-    # assert_receive :stopped, 4500
+    assert_receive :stopped, 4500
   end
 
   test "reject client connection", ctx do

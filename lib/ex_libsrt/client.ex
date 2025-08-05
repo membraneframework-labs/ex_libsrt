@@ -15,7 +15,7 @@ defmodule ExLibSRT.Client do
   ## Password Authentication
 
   When connecting to a server that requires password authentication:
-  - Password must be between 10 and 79 characters long (SRT specification requirement)
+  - Password must be between 10 and 79 characters long (SRT specification requirement: https://github.com/Haivision/srt/blob/master/docs/API/API-socket-options.md#srto_passphrase)
   - Empty string means no password authentication (default behavior)
   - Password must match the server's password
 
