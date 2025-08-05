@@ -74,15 +74,11 @@ defmodule ExLibSRT.Server do
   @spec start_link(address :: String.t(), port :: non_neg_integer(), password :: String.t()) ::
           {:ok, t()} | {:error, reason :: String.t(), error_code :: integer()}
   def start_link(address, port, password \\ "") do
-    with :ok <- validate_password(password) do
-      case ExLibSRT.Native.start_server(address, port, password) do
-        {:ok, server_ref} ->
-          Agent.start_link(fn -> server_ref end)
-
-        {:error, reason, error_code} ->
-          {:error, reason, error_code}
-      end
+    with :ok <- validate_password(password),
+         {:ok, server_ref} <- ExLibSRT.Native.start_server(address, port, password) do
+      Agent.start_link(fn -> server_ref end)
     else
+      {:error, reason, error_code} -> {:error, reason, error_code}
       {:error, reason} -> {:error, reason, 0}
     end
   end
