@@ -8,6 +8,7 @@ defmodule ExLibSRT.ServerTest do
 
   test "accept a new connection", ctx do
     assert {:ok, server} = Server.start("0.0.0.0", ctx.srt_port)
+    on_exit(fn -> Server.stop(server) end)
 
     stream_id = "random_stream_id"
 
@@ -30,6 +31,7 @@ defmodule ExLibSRT.ServerTest do
 
   test "decline the connection", ctx do
     assert {:ok, server} = Server.start("0.0.0.0", ctx.srt_port)
+    on_exit(fn -> Server.stop(server) end)
 
     stream_id = "forbidden_stream_id"
     _proxy = Transmit.start_streaming_proxy(ctx.udp_port, ctx.srt_port, stream_id)
@@ -44,6 +46,7 @@ defmodule ExLibSRT.ServerTest do
 
   test "receive data over connection", ctx do
     assert {:ok, server} = Server.start("0.0.0.0", ctx.srt_port)
+    on_exit(fn -> Server.stop(server) end)
 
     proxy =
       Transmit.start_streaming_proxy(ctx.udp_port, ctx.srt_port, "data_stream_id")
@@ -73,6 +76,7 @@ defmodule ExLibSRT.ServerTest do
 
   test "can handle multiple connections", ctx do
     assert {:ok, server} = Server.start("0.0.0.0", ctx.srt_port)
+    on_exit(fn -> Server.stop(server) end)
 
     streams =
       for udp_port <- ctx.udp_port..(ctx.udp_port + 10), into: %{} do
@@ -102,6 +106,7 @@ defmodule ExLibSRT.ServerTest do
 
   test "send closed connection notification", ctx do
     assert {:ok, server} = Server.start("0.0.0.0", ctx.srt_port)
+    on_exit(fn -> Server.stop(server) end)
 
     proxy =
       Transmit.start_streaming_proxy(
@@ -122,6 +127,7 @@ defmodule ExLibSRT.ServerTest do
 
   test "close an ongoing connection", ctx do
     assert {:ok, server} = Server.start("0.0.0.0", ctx.srt_port)
+    on_exit(fn -> Server.stop(server) end)
 
     _proxy =
       Transmit.start_streaming_proxy(
@@ -141,6 +147,7 @@ defmodule ExLibSRT.ServerTest do
 
   test "read socket stats", ctx do
     assert {:ok, server} = Server.start("0.0.0.0", ctx.srt_port)
+    on_exit(fn -> Server.stop(server) end)
 
     _proxy =
       Transmit.start_streaming_proxy(
@@ -205,6 +212,7 @@ defmodule ExLibSRT.ServerTest do
     end
 
     assert {:ok, server} = Server.start("0.0.0.0", ctx.srt_port)
+    on_exit(fn -> Server.stop(server) end)
 
     proxy =
       Transmit.start_streaming_proxy(ctx.udp_port, ctx.srt_port, "data_stream_id")
