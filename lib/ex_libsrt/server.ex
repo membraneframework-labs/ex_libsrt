@@ -138,7 +138,6 @@ defmodule ExLibSRT.Server do
   @spec accept_awaiting_connect_request_with_handler(ExLibSRT.Connection.Handler.t(), t()) ::
           {:ok, ExLibSRT.Connection.t()} | {:error, reason :: any()}
   def accept_awaiting_connect_request_with_handler(handler, agent) do
-
     with true <- Process.alive?(agent),
          server_ref = Agent.get(agent, & &1),
          {:ok, handler} <- ExLibSRT.Connection.start(handler),
@@ -147,6 +146,7 @@ defmodule ExLibSRT.Server do
     else
       false ->
         {:error, "Server is not active"}
+
       {:error, _reason} = error ->
         ExLibSRT.Connection.stop(handler)
         error

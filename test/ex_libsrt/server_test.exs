@@ -1,5 +1,5 @@
 defmodule ExLibSRT.ServerTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
 
   alias ExLibSRT.Server
   alias ExLibSRT.SRTLiveTransmit, as: Transmit
@@ -160,7 +160,7 @@ defmodule ExLibSRT.ServerTest do
     for _i <- 1..10 do
       :ok = Transmit.send_payload(stream, payload)
 
-      assert_receive {:srt_data, ^conn_id, ^payload}, 500
+      assert_receive {:srt_data, ^conn_id, ^payload}, 1_000
     end
 
     assert {:ok, stats} = Server.read_socket_stats(conn_id, server)

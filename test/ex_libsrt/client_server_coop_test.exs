@@ -148,7 +148,7 @@ defmodule ExLibSRT.ClientServerCoopTest do
 
       # Client should fail to connect due to password mismatch
       assert {:error, _reason, _code} =
-             Client.start("127.0.0.1", ctx.srt_port, "auth_stream", client_password)
+               Client.start("127.0.0.1", ctx.srt_port, "auth_stream", client_password)
 
       assert_receive :server_done, 2_000
     end
@@ -177,7 +177,7 @@ defmodule ExLibSRT.ClientServerCoopTest do
 
       # Client without password should fail to connect
       assert {:error, _reason, _code} =
-             Client.start("127.0.0.1", ctx.srt_port, "auth_stream")
+               Client.start("127.0.0.1", ctx.srt_port, "auth_stream")
 
       assert_receive :server_done, 2_000
     end
@@ -187,7 +187,8 @@ defmodule ExLibSRT.ClientServerCoopTest do
       parent = self()
 
       Task.start(fn ->
-        assert {:ok, server} = Server.start("127.0.0.1", ctx.srt_port)  # No password
+        # No password
+        assert {:ok, server} = Server.start("127.0.0.1", ctx.srt_port)
         send(parent, :server_running)
 
         receive do
@@ -206,7 +207,7 @@ defmodule ExLibSRT.ClientServerCoopTest do
 
       # Client with password should fail to connect to server without password
       assert {:error, _reason, _code} =
-             Client.start("127.0.0.1", ctx.srt_port, "auth_stream", client_password)
+               Client.start("127.0.0.1", ctx.srt_port, "auth_stream", client_password)
 
       assert_receive :server_done, 2_000
     end
@@ -215,7 +216,8 @@ defmodule ExLibSRT.ClientServerCoopTest do
       parent = self()
 
       Task.start(fn ->
-        assert {:ok, server} = Server.start("127.0.0.1", ctx.srt_port)  # No password
+        # No password
+        assert {:ok, server} = Server.start("127.0.0.1", ctx.srt_port)
         send(parent, :server_running)
 
         assert_receive {:srt_server_connect_request, _address, "no_auth_stream"}
@@ -230,7 +232,8 @@ defmodule ExLibSRT.ClientServerCoopTest do
 
       assert_receive :server_running, 1_000
 
-      {:ok, client} = Client.start("127.0.0.1", ctx.srt_port, "no_auth_stream")  # No password
+      # No password
+      {:ok, client} = Client.start("127.0.0.1", ctx.srt_port, "no_auth_stream")
       assert_receive :srt_client_connected, 2_000
       assert_receive :connection_accepted, 1_000
 

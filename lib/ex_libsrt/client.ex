@@ -44,7 +44,12 @@ defmodule ExLibSRT.Client do
   """
   @spec start_link(address :: String.t(), port :: non_neg_integer(), stream_id :: String.t()) ::
           {:ok, t()} | {:error, reason :: String.t(), error_code :: integer()}
-  @spec start_link(address :: String.t(), port :: non_neg_integer(), stream_id :: String.t(), password :: String.t()) ::
+  @spec start_link(
+          address :: String.t(),
+          port :: non_neg_integer(),
+          stream_id :: String.t(),
+          password :: String.t()
+        ) ::
           {:ok, t()} | {:error, reason :: String.t(), error_code :: integer()}
   def start_link(address, port, stream_id, password \\ "") do
     with :ok <- validate_password(password),
@@ -66,7 +71,12 @@ defmodule ExLibSRT.Client do
   """
   @spec start(address :: String.t(), port :: non_neg_integer(), stream_id :: String.t()) ::
           {:ok, t()} | {:error, reason :: String.t(), error_code :: integer()}
-  @spec start(address :: String.t(), port :: non_neg_integer(), stream_id :: String.t(), password :: String.t()) ::
+  @spec start(
+          address :: String.t(),
+          port :: non_neg_integer(),
+          stream_id :: String.t(),
+          password :: String.t()
+        ) ::
           {:ok, t()} | {:error, reason :: String.t(), error_code :: integer()}
   def start(address, port, stream_id, password \\ "") do
     with :ok <- validate_password(password),

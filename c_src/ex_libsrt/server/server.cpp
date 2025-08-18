@@ -114,13 +114,11 @@ void Server::RunEpoll() {
       if (socket_state == SRTS_LISTENING) {
         AcceptConnection();
       } else if (socket_state == SRTS_BROKEN || socket_state == SRTS_CLOSED) {
-        printf("CLOSED %d\n", socket_state == SRTS_CLOSED);
-
         DisconnectSocket(sockets[i]);
       } else if (socket_state == SRTS_CONNECTED) {
         ReadSocketData(sockets[i]);
       } else {
-        printf("[WARNING] Encoutnered new socket state, report it to maintainers -> %d\n", socket_state);
+        printf("[WARNING] Encountered new socket state, report it to maintainers -> %d\n", socket_state);
       }
     }
 
