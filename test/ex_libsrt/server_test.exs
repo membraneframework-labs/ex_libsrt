@@ -7,9 +7,6 @@ defmodule ExLibSRT.ServerTest do
   setup :prepare_streaming
 
   test "accept a new connection", ctx do
-    assert {:ok, server} = Server.start("0.0.0.0", ctx.srt_port)
-    on_exit(fn -> Server.stop(server) end)
-
     stream_id = "random_stream_id"
 
     proxy =
@@ -22,7 +19,7 @@ defmodule ExLibSRT.ServerTest do
     assert_receive {:srt_server_connect_request, address, ^stream_id}, 2_000
     assert address == "127.0.0.1"
 
-    :ok = Server.accept_awaiting_connect_request(server)
+    :ok = Server.accept_awaiting_connect_request(ctx.server)
 
     assert_receive {:srt_server_conn, _conn_id, ^stream_id}, 1_000
 
@@ -30,24 +27,18 @@ defmodule ExLibSRT.ServerTest do
   end
 
   test "decline the connection", ctx do
-    assert {:ok, server} = Server.start("0.0.0.0", ctx.srt_port)
-    on_exit(fn -> Server.stop(server) end)
-
     stream_id = "forbidden_stream_id"
     _proxy = Transmit.start_streaming_proxy(ctx.udp_port, ctx.srt_port, stream_id)
 
     assert_receive {:srt_server_connect_request, address, ^stream_id}, 2_000
     assert address == "127.0.0.1"
 
-    Server.reject_awaiting_connect_request(server)
+    Server.reject_awaiting_connect_request(ctx.server)
 
     refute_receive {:srt_server_conn, _conn_id, _stream_id}, 1_000
   end
 
   test "receive data over connection", ctx do
-    assert {:ok, server} = Server.start("0.0.0.0", ctx.srt_port)
-    on_exit(fn -> Server.stop(server) end)
-
     proxy =
       Transmit.start_streaming_proxy(ctx.udp_port, ctx.srt_port, "data_stream_id")
 
@@ -56,7 +47,7 @@ defmodule ExLibSRT.ServerTest do
     assert_receive {:srt_server_connect_request, address, _stream_id}, 2_000
     assert address == "127.0.0.1"
 
-    :ok = Server.accept_awaiting_connect_request(server)
+    :ok = Server.accept_awaiting_connect_request(ctx.server)
 
     assert_receive {:srt_server_conn, conn_id, _stream_id}, 1_000
 
@@ -75,16 +66,13 @@ defmodule ExLibSRT.ServerTest do
   end
 
   test "can handle multiple connections", ctx do
-    assert {:ok, server} = Server.start("0.0.0.0", ctx.srt_port)
-    on_exit(fn -> Server.stop(server) end)
-
     streams =
       for udp_port <- ctx.udp_port..(ctx.udp_port + 10), into: %{} do
         proxy = Transmit.start_streaming_proxy(udp_port, ctx.srt_port, "stream_#{udp_port}")
 
         assert_receive {:srt_server_connect_request, _address, _stream_id}, 2_000
 
-        :ok = Server.accept_awaiting_connect_request(server)
+        :ok = Server.accept_awaiting_connect_request(ctx.server)
 
         assert_receive {:srt_server_conn, conn_id, _stream_id}, 1_000
 
@@ -105,9 +93,6 @@ defmodule ExLibSRT.ServerTest do
   end
 
   test "send closed connection notification", ctx do
-    assert {:ok, server} = Server.start("0.0.0.0", ctx.srt_port)
-    on_exit(fn -> Server.stop(server) end)
-
     proxy =
       Transmit.start_streaming_proxy(
         ctx.udp_port,
@@ -116,7 +101,7 @@ defmodule ExLibSRT.ServerTest do
       )
 
     assert_receive {:srt_server_connect_request, _address, _stream_id}, 2_000
-    :ok = Server.accept_awaiting_connect_request(server)
+    :ok = Server.accept_awaiting_connect_request(ctx.server)
 
     assert_receive {:srt_server_conn, conn_id, _stream_id}, 1_000
 
@@ -126,9 +111,6 @@ defmodule ExLibSRT.ServerTest do
   end
 
   test "close an ongoing connection", ctx do
-    assert {:ok, server} = Server.start("0.0.0.0", ctx.srt_port)
-    on_exit(fn -> Server.stop(server) end)
-
     _proxy =
       Transmit.start_streaming_proxy(
         ctx.udp_port,
@@ -136,19 +118,16 @@ defmodule ExLibSRT.ServerTest do
       )
 
     assert_receive {:srt_server_connect_request, _address, _stream_id}, 2_000
-    :ok = Server.accept_awaiting_connect_request(server)
+    :ok = Server.accept_awaiting_connect_request(ctx.server)
 
     assert_receive {:srt_server_conn, conn_id, _stream_id}, 1_000
 
-    Server.close_server_connection(conn_id, server)
+    Server.close_server_connection(conn_id, ctx.server)
 
     assert_receive {:srt_server_conn_closed, ^conn_id}, 1_000
   end
 
   test "read socket stats", ctx do
-    assert {:ok, server} = Server.start("0.0.0.0", ctx.srt_port)
-    on_exit(fn -> Server.stop(server) end)
-
     _proxy =
       Transmit.start_streaming_proxy(
         ctx.udp_port,
@@ -156,7 +135,7 @@ defmodule ExLibSRT.ServerTest do
       )
 
     assert_receive {:srt_server_connect_request, _address, _stream_id}, 2_000
-    :ok = Server.accept_awaiting_connect_request(server)
+    :ok = Server.accept_awaiting_connect_request(ctx.server)
 
     assert_receive {:srt_server_conn, conn_id, _stream_id}, 1_000
 
@@ -170,13 +149,13 @@ defmodule ExLibSRT.ServerTest do
       assert_receive {:srt_data, ^conn_id, ^payload}, 1_000
     end
 
-    assert {:ok, stats} = Server.read_socket_stats(conn_id, server)
+    assert {:ok, stats} = Server.read_socket_stats(conn_id, ctx.server)
 
     assert %ExLibSRT.SocketStats{} = stats
     assert stats.pktRecv == 10
     assert stats.byteRecvTotal > 1_000
 
-    assert {:error, "Socket not found"} = Server.read_socket_stats(2137, server)
+    assert {:error, "Socket not found"} = Server.read_socket_stats(2137, ctx.server)
   end
 
   test "starts a separate connection process", ctx do
@@ -211,9 +190,6 @@ defmodule ExLibSRT.ServerTest do
       end
     end
 
-    assert {:ok, server} = Server.start("0.0.0.0", ctx.srt_port)
-    on_exit(fn -> Server.stop(server) end)
-
     proxy =
       Transmit.start_streaming_proxy(ctx.udp_port, ctx.srt_port, "data_stream_id")
 
@@ -223,7 +199,7 @@ defmodule ExLibSRT.ServerTest do
     assert address == "127.0.0.1"
 
     assert {:ok, connection} =
-             Server.accept_awaiting_connect_request_with_handler(ReceiverHandler, server)
+             Server.accept_awaiting_connect_request_with_handler(ReceiverHandler, ctx.server)
 
     assert is_pid(connection)
 
@@ -285,6 +261,9 @@ defmodule ExLibSRT.ServerTest do
     udp_port = Enum.random(10_000..20_000)
     srt_port = Enum.random(10_000..20_000)
 
-    [udp_port: udp_port, srt_port: srt_port]
+    {:ok, server} = Server.start("0.0.0.0", srt_port)
+    on_exit(fn -> Server.stop(server) end)
+
+    [udp_port: udp_port, srt_port: srt_port, server: server]
   end
 end
